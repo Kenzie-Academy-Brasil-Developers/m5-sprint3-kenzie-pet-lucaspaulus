@@ -1,4 +1,5 @@
 import math
+from webbrowser import get
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from groups.serializers import GroupsSerializer
@@ -15,7 +16,7 @@ class AnimalsSerializer(serializers.Serializer):
     age = serializers.IntegerField()
     age_in_human_years = serializers.SerializerMethodField()
     weight = serializers.FloatField()
-    sex = serializers.ChoiceField(max_length=15, choices=Genders.choices, default=Genders.UNDEFINED)
+    sex = serializers.ChoiceField(choices=Genders.choices, default=Genders.UNDEFINED)
     traits  = TraitsSerializer(many=True)
     groups = GroupsSerializer()
     
@@ -23,13 +24,13 @@ class AnimalsSerializer(serializers.Serializer):
 
     def create(self,validate_data: dict):
         group_To_Create = validate_data.pop("groups")
-        groupAll, _ = Groups.objects.get_or_create(**group_To_Create)[0]
+        groupAll = Groups.objects.get_or_create(**group_To_Create)[0]
         traits_to_Create = validate_data.pop('traits')
 
-        createAnimal = Animals.objects.create( **validate_data, group = groupAll)
+        createAnimal = Animals.objects.create( **validate_data, groups = groupAll)
 
         for trait in traits_to_Create:
-            traits_to_add, _ = Traits.objects.get_or_create(**trait)[0]
+            traits_to_add = Traits.objects.get_or_create(**trait)[0]
             createAnimal.traits.add(traits_to_add)
         return createAnimal
 
